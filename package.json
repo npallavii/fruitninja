@@ -10,6 +10,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "deploy": "node scripts/deploy.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

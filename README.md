@@ -12,8 +12,14 @@ npm run dev      # opens http://localhost:5173
 ```
 
 Webcam access works on `localhost` or any `https://` address.
-To publish: `npm run build`, then upload the `dist/` folder to any static HTTPS host
-(Netlify, Vercel, GitHub Pages, …).
+
+## Play online
+
+**https://npallavii.github.io/fruitninja/**
+
+To publish an update: commit your changes, then run `npm run deploy`.
+It builds the game and pushes it to the `gh-pages` branch, which GitHub Pages serves
+(live about a minute later).
 
 ## How to play
 
