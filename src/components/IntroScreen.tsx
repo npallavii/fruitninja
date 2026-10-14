@@ -1,17 +1,30 @@
+import { useEffect } from 'react';
 import { fruitDataUrl } from '../art/fruits';
+import { voice } from '../audio/voice';
 import type { InputMode } from '../state/types';
 import { Pip } from './Characters';
 import { BackIcon, CameraIcon, FlowerIcon, HandIcon } from './Icons';
 import { Backdrop, Button, SpeechBubble } from './ui';
 
 /** How to play + choose camera or mouse/touch. Short, visual, no long reading. */
+const LINE = 'The garden is sleepy. Let’s move our bodies to wake it up! Swish your arms, slice the fruit, and watch the flowers bloom!';
+
 export function IntroScreen({ onChoose, onBack }: { onChoose: (m: InputMode) => void; onBack: () => void }) {
+  useEffect(() => {
+    const id = window.setTimeout(() => voice.say(LINE, 'pip', true), 400);
+    return () => {
+      window.clearTimeout(id);
+      voice.stop();
+    };
+  }, []);
   return (
     <Backdrop rainbow={false}>
       <main className="intro">
         <Button className="corner-back" size="sm" tone="cream" icon={<BackIcon size={22} />} onClick={onBack} ariaLabel="Back" />
         <div className="intro__pip">
-          <Pip mood="cheer" size={230} />
+          <button type="button" className="talk-btn" aria-label="Hear Pip again" onClick={() => voice.say(LINE, 'pip', true)}>
+            <Pip mood="cheer" size={230} />
+          </button>
           <SpeechBubble side="left">
             The garden is sleepy. <br />
             Let’s move our bodies to wake it up!

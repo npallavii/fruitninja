@@ -29,7 +29,7 @@ class AudioEngine {
   private step = 0;
   private bpm = 112;
   private melody: (number | null)[] = [];
-  private ducked = false;
+  private duckReasons = new Set<string>();
 
   /** Call from a user gesture (click/tap). Safe to call repeatedly. */
   unlock(): void {
@@ -87,12 +87,14 @@ class AudioEngine {
     const s = settings.get();
     const t = this.ctx.currentTime;
     this.master.gain.setTargetAtTime(s.muted ? 0 : 0.9, t, 0.05);
-    this.music.gain.setTargetAtTime(s.musicVolume * 0.55 * (this.ducked ? 0.35 : 1), t, 0.2);
+    this.music.gain.setTargetAtTime(s.musicVolume * 0.55 * (this.duckReasons.size ? 0.35 : 1), t, 0.2);
     this.sfx.gain.setTargetAtTime(s.sfxVolume * 0.8, t, 0.05);
   }
 
-  duck(on: boolean): void {
-    this.ducked = on;
+  /** Lower the music while something important happens (a voice line, the frost moment…). */
+  duck(on: boolean, reason = 'fx'): void {
+    if (on) this.duckReasons.add(reason);
+    else this.duckReasons.delete(reason);
     this.applyVolumes();
   }
 
@@ -331,6 +333,51 @@ class AudioEngine {
     const t = this.now();
     [0, 2, 4, 5, 7, 9, 10].forEach((d, i) => this.kalimba(scaleNote(d, 72), t + i * 0.11, 0.13, this.sfx));
     this.chimes(5, 91);
+  }
+
+  /** Each character's little signature sound, played just before they speak. */
+  chirp(who: 'pip' | 'bloop' | 'misty'): void {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const t = this.now();
+    const sweep = (from: number, to: number, start: number, dur: number, gain: number, type: OscillatorType = 'sine') => {
+      const o = ctx.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(from, start);
+      o.frequency.exponentialRampToValueAtTime(to, start + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      o.connect(g).connect(this.sfx);
+      const send = ctx.createGain();
+      send.gain.value = 0.25;
+      g.connect(send).connect(this.reverbSend);
+      o.start(start);
+      o.stop(start + dur + 0.02);
+    };
+    if (who === 'pip') {
+      // two bright little squeaks
+      sweep(900, 1350, t, 0.09, 0.05);
+      sweep(1050, 1580, t + 0.1, 0.1, 0.045);
+    } else if (who === 'bloop') {
+      // soft low "ribbit" plops
+      sweep(260, 150, t, 0.11, 0.09, 'triangle');
+      sweep(230, 130, t + 0.13, 0.13, 0.08, 'triangle');
+    } else {
+      // airy shimmer
+      [0, 2, 4].forEach((d, i) =>
+        this.tone(this.sfx, midiToHz(scaleNote(d, 91)), t + i * 0.05, { decay: 0.9, gain: 0.03, partials: [[2.76, 0.3, 0.3]], reverb: 0.8 }),
+      );
+    }
+  }
+
+  /** A soft "pop" for lanterns in the sky. */
+  pop(height = 0.5): void {
+    if (!this.ctx) return;
+    const t = this.now();
+    this.noiseBurst(t, { dur: 0.07, freq: 2600, q: 2, gain: 0.05 });
+    this.kalimba(scaleNote(Math.round(4 + height * 6), 72), t + 0.01, 0.13, this.sfx);
   }
 
   ui(): void {

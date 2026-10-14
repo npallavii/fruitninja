@@ -1,10 +1,13 @@
 import { useEffect, type ReactNode } from 'react';
 import { fruitDataUrl } from '../art/fruits';
 import { audio } from '../audio/audio';
-import type { RoundResult } from '../state/types';
-import { Pip } from './Characters';
+import { voice } from '../audio/voice';
+import { LEVELS, type RoundResult } from '../state/types';
+import { Companion } from './Characters';
 import { ClockIcon, FlowerIcon, HomeIcon, LeafIcon, ReplayIcon } from './Icons';
 import { Backdrop, Button, SpeechBubble } from './ui';
+
+const SUCCESS_LABEL = { giggle: 'Fruits sliced', waterway: 'Splashes', sky: 'Lanterns popped' } as const;
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
   return (
@@ -31,13 +34,19 @@ export function ResultsScreen({
   onLevels: () => void;
   onHome: () => void;
 }) {
-  useEffect(() => audio.stopMusic(), []);
+  const friend = LEVELS.find((l) => l.id === result.level)?.companion ?? 'pip';
   const mins = Math.floor(result.activeSeconds / 60);
   const secs = String(result.activeSeconds % 60).padStart(2, '0');
   const pipLine =
     result.flowers > 0
       ? `You helped ${result.flowers} flower${result.flowers === 1 ? '' : 's'} bloom today!`
       : 'What lovely moving! The garden loved it.';
+  useEffect(() => {
+    audio.stopMusic();
+    const extra = newBest ? ' And that’s your best score ever!' : '';
+    const id = window.setTimeout(() => voice.say(pipLine + extra, friend, true), 900);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <Backdrop rainbow>
@@ -57,7 +66,7 @@ export function ResultsScreen({
 
           <aside className="card stats">
             {newBest && <div className="ribbon">New best!</div>}
-            <Stat icon={<img src={fruitDataUrl('strawberry')} alt="" width={34} />} label="Fruits sliced" value={result.fruits} />
+            <Stat icon={<img src={fruitDataUrl('strawberry')} alt="" width={34} />} label={SUCCESS_LABEL[result.level]} value={result.fruits} />
             <Stat icon={<FlowerIcon size={30} />} label="Flowers woke up" value={result.flowers} />
             <Stat icon={<ClockIcon size={28} />} label="Time moving" value={`${mins}:${secs}`} />
             <Stat icon={<span className="mini-rainbow" />} label="Best flow" value={result.bestCombo ? `×${result.bestCombo}` : '—'} />
@@ -79,7 +88,9 @@ export function ResultsScreen({
 
         <div className="results__bottom">
           <div className="results__pip">
-            <Pip mood="cheer" size={140} />
+            <button type="button" className="talk-btn" aria-label="Hear it again" onClick={() => voice.say(pipLine, friend, true)}>
+              <Companion who={friend} mood="cheer" size={140} />
+            </button>
             <SpeechBubble side="left">{pipLine}</SpeechBubble>
           </div>
           <div className="row">

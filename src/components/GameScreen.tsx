@@ -4,6 +4,7 @@ import { levelCanvas } from '../art/backgrounds';
 import { fruitDataUrl } from '../art/fruits';
 import { paperGrainDataUrl } from '../art/watercolor';
 import { audio } from '../audio/audio';
+import { voice } from '../audio/voice';
 import { createGame } from '../game/createGame';
 import { Tapestry } from '../game/tapestry';
 import { InputHub } from '../input/inputHub';
@@ -12,11 +13,13 @@ import { settings } from '../state/settings';
 import { LEVELS, type HudState, type InputMode, type LevelId, type RoundResult } from '../state/types';
 import { CameraStartError, measureBrightness, startCamera, stopCamera } from '../vision/camera';
 import { PoseTracker } from '../vision/poseTracker';
-import { Pip, type Mood } from './Characters';
+import { Companion, Pip, type Mood } from './Characters';
 import { ClockIcon, FlowerIcon, GearIcon, HandIcon, HomeIcon, PauseIcon, PlayIcon, ReplayIcon } from './Icons';
 import { Button, SpeechBubble } from './ui';
 
 type Phase = 'starting' | 'loading' | 'calibrating' | 'playing' | 'error';
+
+const FRIEND = { pip: 'Pip', bloop: 'Bloop', misty: 'Misty' } as const;
 
 const ERROR_TEXT: Record<string, string> = {
   denied: 'Pip needs permission to use the camera. Click the camera icon in the address bar, choose “Allow”, then try again.',
@@ -58,6 +61,9 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
   const [dim, setDim] = useState(false);
   const [paused, setPaused] = useState(false);
   const [opacity, setOpacity] = useState(settings.get().cameraOpacity);
+  const companion = LEVELS.find((l) => l.id === level)?.companion ?? 'pip';
+  const phaseRef = useRef<Phase>('starting');
+  phaseRef.current = phase;
 
   useEffect(() => settings.subscribe((s) => setOpacity(s.cameraOpacity)), []);
 
@@ -80,10 +86,28 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
     setFrost(null);
 
     bus.on('hud', setHud);
-    bus.on('pip', (p) => setPip({ text: p.text, mood: p.mood ?? 'happy', id: performance.now() }));
-    bus.on('calibration', setCalib);
+    bus.on('pip', (p) => {
+      setPip({ text: p.text, mood: p.mood ?? 'happy', id: performance.now() });
+      // Pip guides the Stepping Stone; each world's own friend talks during play
+      voice.say(p.text, phaseRef.current === 'calibrating' ? 'pip' : companion, p.mood === 'cheer');
+    });
+    let spoken = '';
+    let spokenAt = 0;
+    bus.on('calibration', (c) => {
+      setCalib(c);
+      const now = performance.now();
+      const done = c.progress >= 1;
+      if (c.message !== spoken && (done || now - spokenAt > 3500)) {
+        spoken = c.message;
+        spokenAt = now;
+        voice.say(c.message, 'pip', done);
+      }
+    });
     bus.on('calibrated', () => setPhase('playing'));
-    bus.on('tracking', ({ visible }) => setLost(!visible));
+    bus.on('tracking', ({ visible }) => {
+      setLost(!visible);
+      if (!visible && phaseRef.current === 'playing') voice.say('Where did you go? Step back into the garden!', companion, true);
+    });
     bus.on('combo', ({ count }) => setCombo({ count, id: performance.now() }));
     bus.on('frost', (f) => setFrost(f.phase === 'cleared' || f.phase === 'melted' ? { ...f } : f));
     bus.on('roundEnd', (r) => onEndRef.current(r));
@@ -117,7 +141,7 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
         gameRef.current = createGame(phaserRef.current!, services, 'calibration');
         setPhase('calibrating');
       } else {
-        gameRef.current = createGame(phaserRef.current!, services, 'giggle');
+        gameRef.current = createGame(phaserRef.current!, services, level);
       }
     };
     void boot();
@@ -130,6 +154,7 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
       tracker?.stop();
       stopCamera(video, stream);
       bus.clear();
+      voice.stop();
       audio.stopMusic();
       audio.duck(false);
     };
@@ -225,7 +250,7 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
         {mode === 'camera' && (phase === 'playing' || phase === 'calibrating') && (
           <div className={`cam-chip ${lost ? 'is-lost' : ''}`}>
             <span className="cam-chip__dot" />
-            {lost ? 'Looking for you…' : 'Pip can see you'}
+            {lost ? 'Looking for you…' : `${phase === 'calibrating' ? 'Pip' : FRIEND[companion]} can see you`}
           </div>
         )}
 
@@ -237,7 +262,7 @@ export function GameScreen({ level, mode, onEnd, onHome, onRestart, onUseMouse, 
                 {pip.text}
               </SpeechBubble>
             )}
-            <Pip mood={pip?.mood ?? 'happy'} size={150} />
+            {phase === 'calibrating' ? <Pip mood={pip?.mood ?? 'happy'} size={150} /> : <Companion who={companion} mood={pip?.mood ?? 'happy'} />}
           </div>
         )}
 

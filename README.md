@@ -24,14 +24,23 @@ It builds the game and pushes it to the `gh-pages` branch, which GitHub Pages se
 ## How to play
 
 1. **Play** → choose **Play with my body** (webcam) or **Mouse or touch**.
-2. Pick **The Giggle Garden**.
-3. Camera mode starts with **The Stepping Stone**: step back until Pip can see you.
-   Lotus flowers bloom around the pond as you get into place.
-4. Swish your arms through the fruit. Fast swishes leave a soft brush trail and slice.
-   - Every 3 fruits wakes up a sleepy flower.
-   - 3+ fruits in one sweep = **Calligraphy Flow** combo (rainbow ribbon, butterflies).
-   - Slice the **Morning Frost** crystal, then hold still like a statue for 3 seconds.
-5. At the end, see the garden you painted in a wooden storybook frame.
+2. Pick a world. Camera mode starts with **The Stepping Stone**: step back until Pip can see you.
+3. Play for one round, then see the garden you painted in a wooden storybook frame.
+
+| World | Friend | Movement | How it plays |
+|---|---|---|---|
+| **The Giggle Garden** | Pip the red panda | Arms | Swish through floating fruit. 3+ in one sweep = **Calligraphy Flow** combo. |
+| **The Wiggly Waterway** | Bloop the frog | Legs & balance | Step/stomp beside rolling melons to splash them. Stand on the **glowing lily pad** to make a lotus bloom. If your feet are hidden, hands work too. |
+| **The Cloudberry Sky** | Misty the cloud | Reaching & jumping | Touch rising lanterns to pop them (higher = bonus). Each pop grows a **rainbow bridge**. **Jump** (or reach) to catch the golden star. |
+
+In every world: successes wake up sleepy flowers, and the **Morning Frost** crystal asks for a 3-second statue pose.
+
+### Character voices
+
+Pip, Bloop and Misty speak their lines aloud, each in their own voice (Pip bright and bouncy,
+Bloop low and slow, Misty soft and dreamy), using the browser's built-in speech engine.
+Tap any character to hear them again. Voices can be turned off or quieter in Settings.
+Best in Chrome or Edge (Edge has the most natural voices).
 
 Keyboard: `Esc` or `P` pauses.
 
@@ -40,7 +49,7 @@ Keyboard: `Esc` or `P` pauses.
 - **Camera picture**: from *Garden only* (camera hidden) to *Clear mirror*.
   The default is a soft 75% mirror. It only changes how the picture looks;
   body tracking always uses the full camera image.
-- Music / sound-effect volume, mute.
+- Music / sound-effect volume, mute, character voices on/off and voice volume.
 - Slicing sensitivity (*Gentle swish* is easiest), round length, calm motion.
 - Reset progress.
 
@@ -52,7 +61,7 @@ src/
   components/             React screens, HUD, Pip & friends (SVG), settings
   game/
     createGame.ts         Phaser setup (transparent canvas over paper + camera)
-    scenes/               CalibrationScene (Stepping Stone), GiggleGardenScene
+    scenes/               LevelScene (shared base), CalibrationScene, Giggle / Waterway / Sky
     entities/Fruit.ts     floaty fruit physics
     effects/              brush trails, slice halves, watercolor blooms, petals
     systems/              LivingGarden (flowers, butterflies), FrostMoment
@@ -61,6 +70,7 @@ src/
   input/inputHub.ts       turns wrists / mouse into two "magic hands"
   art/                    procedural watercolor painter, fruit art, textures, palette
   audio/audio.ts          procedural kalimba/marimba music and organic sound effects
+  audio/voice.ts          character voices (speech synthesis tuned per character)
   state/                  settings, saved progress, event bus, shared types
 reference/                the concept images used for art direction
 ```
@@ -72,5 +82,6 @@ so there's nothing to license and nothing that can fail to load.
 
 - [x] Phase 1–3: foundation, Giggle Garden, real body tracking + calibration
 - [x] Morning Frost, Calligraphy Flow combos, Living Tapestry results
-- [ ] The Wiggly Waterway (legs & balance) — Bloop the frog
-- [ ] The Cloudberry Sky (reaching & jumping) — Misty the cloud
+- [x] Character voices (Pip, Bloop, Misty)
+- [x] The Wiggly Waterway (legs & balance) — Bloop the frog
+- [x] The Cloudberry Sky (reaching & jumping) — Misty the cloud

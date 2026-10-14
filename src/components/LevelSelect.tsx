@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { voice } from '../audio/voice';
 import { levelThumbUrl } from '../art/backgrounds';
 import { fruitDataUrl } from '../art/fruits';
 import { getProgress } from '../state/progress';
@@ -8,10 +9,21 @@ import { BackIcon, LockLeafIcon, PlayIcon } from './Icons';
 import { Backdrop, Button } from './ui';
 
 const TONES: Record<LevelId, string> = { giggle: 'matcha', waterway: 'slate', sky: 'lavender' };
+const FRIEND_NAMES = { pip: 'Peachy', bloop: 'Bloop', misty: 'Misty' } as const;
+const HELLOS = {
+  pip: 'Hee hee! I’m Peachy. Come slice fruit in the Giggle Garden!',
+  bloop: 'Ribbit! I’m Bloop. Let’s splash by the river!',
+  misty: 'Hello, I’m Misty. Let’s float up into the sky!',
+} as const;
 
 export function LevelSelect({ onPick, onBack }: { onPick: (id: LevelId) => void; onBack: () => void }) {
   const [thumbs, setThumbs] = useState<Partial<Record<LevelId, string>>>({});
   const best = getProgress().bestScore;
+
+  useEffect(() => {
+    const id = window.setTimeout(() => voice.say('Which world shall we visit today?', 'pip', true), 300);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     // paint thumbnails one by one so the screen appears instantly
@@ -35,11 +47,11 @@ export function LevelSelect({ onPick, onBack }: { onPick: (id: LevelId) => void;
             <article key={lv.id} className={`level level--${TONES[lv.id]} ${lv.available ? '' : 'is-locked'}`}>
               <div className="level__thumb" style={thumbs[lv.id] ? { backgroundImage: `url(${thumbs[lv.id]})` } : undefined}>
                 <span className="level__badge">Level {idx + 1}</span>
-                <div className="level__friend">
+                <button type="button" className="level__friend talk-btn" aria-label={`Say hello to ${FRIEND_NAMES[lv.companion]}`} onClick={() => voice.say(HELLOS[lv.companion], lv.companion, true)}>
                   {lv.id === 'giggle' && <img src={fruitDataUrl('peach')} alt="Peachy" width={96} />}
                   {lv.id === 'waterway' && <Bloop size={96} />}
                   {lv.id === 'sky' && <Misty size={96} />}
-                </div>
+                </button>
               </div>
               <div className="level__body">
                 <h3>{lv.name}</h3>

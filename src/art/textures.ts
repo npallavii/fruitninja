@@ -6,6 +6,7 @@ import { blob, ctx2d, makeCanvas, mulberry32, rand } from './watercolor';
 
 export const FLOWER_COLORS = [PALETTE.blush, PALETTE.apricot, PALETTE.lavender, PALETTE.honey, PALETTE.plum] as const;
 export const BUTTERFLY_COLORS = [PALETTE.blush, PALETTE.lavender, PALETTE.honey, PALETTE.slate] as const;
+export const LANTERN_COLORS = [PALETTE.apricot, PALETTE.blush, PALETTE.honey, PALETTE.lavender] as const;
 
 let cache: Map<string, HTMLCanvasElement> | null = null;
 
@@ -41,6 +42,10 @@ export function getTextures(): Map<string, HTMLCanvasElement> {
   t.set('koi', koi());
   t.set('lotus', lotus());
   t.set('frost', frost(rng));
+  LANTERN_COLORS.forEach((c, i) => t.set(`lantern-${i}`, lantern(c, false)));
+  t.set('lantern-star', lantern('#F4D99A', true));
+  t.set('lilypad', lilypad());
+  t.set('lilypad-glow', lilypadGlow());
 
   cache = t;
   return t;
@@ -326,6 +331,122 @@ function lotus(): HTMLCanvasElement {
     ctx.fill();
     ctx.restore();
   }
+  return c;
+}
+
+/** A glowing paper-lantern fruit with a sleepy smile (or the golden star lantern). */
+function lantern(color: string, star: boolean): HTMLCanvasElement {
+  const S = 200;
+  const c = makeCanvas(S, S);
+  const ctx = ctx2d(c);
+  const cx = S / 2;
+  const cy = S / 2 + 8;
+  const halo = ctx.createRadialGradient(cx, cy, 10, cx, cy, S / 2);
+  halo.addColorStop(0, rgba(star ? '#FFE9A8' : color, 0.55));
+  halo.addColorStop(1, rgba(star ? '#FFE9A8' : color, 0));
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, S, S);
+  // string + cap
+  ctx.strokeStyle = '#9C7A5B';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, 8);
+  ctx.lineTo(cx, cy - 58);
+  ctx.stroke();
+  ctx.fillStyle = '#B9875E';
+  ctx.beginPath();
+  ctx.roundRect(cx - 18, cy - 62, 36, 10, 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx - 16, cy + 50, 32, 9, 4);
+  ctx.fill();
+  if (star) {
+    const p = new Path2D();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const r = i % 2 === 0 ? 58 : 27;
+      const x = cx + Math.cos(a) * r;
+      const y = cy + Math.sin(a) * r;
+      if (i === 0) p.moveTo(x, y);
+      else p.lineTo(x, y);
+    }
+    p.closePath();
+    const g = ctx.createRadialGradient(cx - 10, cy - 10, 4, cx, cy, 60);
+    g.addColorStop(0, '#FFF8DC');
+    g.addColorStop(1, '#F2C45E');
+    ctx.fillStyle = g;
+    ctx.lineJoin = 'round';
+    ctx.fill(p);
+    ctx.strokeStyle = '#D9A441';
+    ctx.lineWidth = 3;
+    ctx.stroke(p);
+  } else {
+    const g = ctx.createRadialGradient(cx - 14, cy - 16, 6, cx, cy, 62);
+    g.addColorStop(0, '#FFF8EC');
+    g.addColorStop(0.55, color);
+    g.addColorStop(1, rgba(color, 0.95));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 50, 56, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // paper ribs
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 2;
+    for (const k of [-0.55, 0, 0.55]) {
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, Math.abs(k) * 50 + 2, 56, 0, k < 0 ? Math.PI / 2 : -Math.PI / 2, k < 0 ? (Math.PI * 3) / 2 : Math.PI / 2);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = rgba('#9C7A5B', 0.35);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 50, 56, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    // leaf
+    ctx.fillStyle = PALETTE.matcha;
+    ctx.beginPath();
+    ctx.moveTo(cx + 8, cy - 58);
+    ctx.quadraticCurveTo(cx + 26, cy - 76, cx + 40, cy - 64);
+    ctx.quadraticCurveTo(cx + 24, cy - 54, cx + 8, cy - 58);
+    ctx.fill();
+  }
+  face(ctx, cx, cy + 6, 1.5, !star);
+  return c;
+}
+
+function lilypad(): HTMLCanvasElement {
+  const c = makeCanvas(240, 140);
+  const ctx = ctx2d(c);
+  const g = ctx.createRadialGradient(110, 60, 10, 120, 70, 120);
+  g.addColorStop(0, '#C9DDB3');
+  g.addColorStop(1, '#8DB27C');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(120, 70);
+  ctx.ellipse(120, 70, 112, 60, 0, -1.25, Math.PI * 2 - 1.75);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = rgba('#6E9665', 0.6);
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 7; i++) {
+    const a = -0.9 + i * 0.75;
+    ctx.beginPath();
+    ctx.moveTo(120, 70);
+    ctx.lineTo(120 + Math.cos(a) * 95, 70 + Math.sin(a) * 50);
+    ctx.stroke();
+  }
+  return c;
+}
+
+function lilypadGlow(): HTMLCanvasElement {
+  const c = makeCanvas(320, 190);
+  const ctx = ctx2d(c);
+  const g = ctx.createRadialGradient(160, 95, 20, 160, 95, 160);
+  g.addColorStop(0, 'rgba(255,248,214,0.85)');
+  g.addColorStop(1, 'rgba(255,248,214,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(160, 95, 160, 95, 0, 0, Math.PI * 2);
+  ctx.fill();
   return c;
 }
 

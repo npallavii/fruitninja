@@ -34,6 +34,16 @@ function makeHand(id: number): Hand {
 
 export class InputHub {
   readonly hands: Hand[] = [makeHand(0), makeHand(1)];
+  /** Feet (from ankles + toes). Only visible when the camera can really see them. */
+  readonly feet: Hand[] = [makeHand(0), makeHand(1)];
+  /** Body centre (between the hips) in game coordinates. */
+  hipX = GAME_W / 2;
+  hipY = GAME_H * 0.6;
+  hipsVisible = false;
+  /** Increments once per detected jump. */
+  jumpCount = 0;
+  private jumping = false;
+  private hipBase: number | null = null;
   mode: 'pose' | 'mouse' = 'mouse';
   bodyVisible = false;
   lastBodyAt = 0;
@@ -43,6 +53,7 @@ export class InputHub {
   video: HTMLVideoElement | null = null;
 
   private filters = [0, 1].map(() => [new OneEuro(), new OneEuro()]);
+  private footFilters = [0, 1].map(() => [new OneEuro(0.9, 0.006), new OneEuro(0.9, 0.006)]);
   private prevBody: { x: number; y: number }[] | null = null;
   private prevBodyT = 0;
 
@@ -74,6 +85,8 @@ export class InputHub {
       if (tMs - this.lastBodyAt > 400) {
         this.bodyVisible = false;
         this.hands.forEach((h) => (h.visible = false));
+        this.feet.forEach((h) => (h.visible = false));
+        this.hipsVisible = false;
         this.prevBody = null;
       }
       return;
@@ -110,6 +123,9 @@ export class InputHub {
       this.sample(hand, fx.filter(px, t), fy.filter(py, t), tMs);
     });
 
+    this.updateFeet(lm, t, tMs);
+    this.updateHips(lm);
+
     // whole-body movement energy, used for the "statue pose"
     const keys = [LM.nose, LM.leftShoulder, LM.rightShoulder, LM.leftWrist, LM.rightWrist, LM.leftHip, LM.rightHip];
     const pts = keys.map((k) => this.toGame(lm[k].x, lm[k].y));
@@ -122,6 +138,60 @@ export class InputHub {
     }
     this.prevBody = pts;
     this.prevBodyT = tMs;
+  }
+
+  private updateFeet(lm: Landmarks, t: number, tMs: number): void {
+    const sides = [
+      { ankle: LM.leftAnkle, toe: LM.leftFootIndex },
+      { ankle: LM.rightAnkle, toe: LM.rightFootIndex },
+    ];
+    sides.forEach((s, i) => {
+      const foot = this.feet[i];
+      const a = lm[s.ankle];
+      // honest about what we can see: no ankle → no foot
+      if (!a || (a.visibility ?? 1) < 0.5 || a.y > 1.02) {
+        foot.visible = false;
+        foot.sliceX = NaN;
+        this.footFilters[i].forEach((f) => f.reset());
+        return;
+      }
+      let { x, y } = this.toGame(a.x, a.y);
+      const toe = lm[s.toe];
+      if (toe && (toe.visibility ?? 1) > 0.5) {
+        const tg = this.toGame(toe.x, toe.y);
+        x = (x + tg.x) / 2;
+        y = (y + tg.y) / 2;
+      }
+      const [fx, fy] = this.footFilters[i];
+      this.sample(foot, fx.filter(x, t), fy.filter(y, t), tMs);
+    });
+  }
+
+  private updateHips(lm: Landmarks): void {
+    const l = lm[LM.leftHip];
+    const r = lm[LM.rightHip];
+    const ls = lm[LM.leftShoulder];
+    const rs = lm[LM.rightShoulder];
+    if (!l || !r || (l.visibility ?? 1) < 0.4 || (r.visibility ?? 1) < 0.4) {
+      this.hipsVisible = false;
+      return;
+    }
+    this.hipsVisible = true;
+    const hip = this.toGame((l.x + r.x) / 2, (l.y + r.y) / 2);
+    const sh = this.toGame((ls.x + rs.x) / 2, (ls.y + rs.y) / 2);
+    this.hipX = hip.x;
+    this.hipY = hip.y;
+    // jump = hips rise quickly above their resting height (relative to torso length)
+    const torso = Math.max(60, Math.hypot(hip.x - sh.x, hip.y - sh.y));
+    if (this.hipBase === null) this.hipBase = hip.y;
+    const lift = (this.hipBase - hip.y) / torso;
+    if (!this.jumping && lift > 0.22) {
+      this.jumping = true;
+      this.jumpCount++;
+    } else if (this.jumping && lift < 0.08) {
+      this.jumping = false;
+    }
+    if (!this.jumping) this.hipBase = this.hipBase * 0.95 + hip.y * 0.05;
   }
 
   // ------------------------------------------------------------- shared
@@ -146,7 +216,7 @@ export class InputHub {
 
   /** Called every game frame. */
   tick(nowMs: number): void {
-    for (const h of this.hands) {
+    for (const h of [...this.hands, ...this.feet]) {
       while (h.trail.length && nowMs - h.trail[0].t > TRAIL_MS) h.trail.shift();
       const idle = nowMs - h.lastT;
       if (idle > 60) h.speed *= 0.82; // no new samples → hand is slowing down
@@ -160,6 +230,9 @@ export class InputHub {
 
   reset(): void {
     this.hands.forEach((h, i) => Object.assign(h, makeHand(i)));
+    this.feet.forEach((h, i) => Object.assign(h, makeHand(i)));
+    this.footFilters.forEach((fs) => fs.forEach((f) => f.reset()));
+    this.hipBase = null;
     this.filters.forEach((fs) => fs.forEach((f) => f.reset()));
     this.prevBody = null;
     this.stillness = 0;

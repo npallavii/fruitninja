@@ -110,9 +110,9 @@ export function Pip({ mood = 'happy', size = 200, className = '' }: { mood?: Moo
 }
 
 /** Bloop — the river frog (Wiggly Waterway companion). */
-export function Bloop({ size = 140 }: { size?: number }) {
+export function Bloop({ size = 140, mood = 'happy' }: { size?: number; mood?: Mood }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 160 160" role="img" aria-label="Bloop the frog">
+    <svg className={`buddy buddy--${mood}`} width={size} height={size} viewBox="0 0 160 160" role="img" aria-label="Bloop the frog">
       <ellipse cx="80" cy="146" rx="62" ry="10" fill="#A8C58A" opacity="0.6" />
       <g>
         <ellipse cx="80" cy="112" rx="50" ry="36" fill="#A8C58A" />
@@ -138,10 +138,10 @@ export function Bloop({ size = 140 }: { size?: number }) {
 }
 
 /** Misty — the cloud friend (Cloudberry Sky companion). */
-export function Misty({ size = 140 }: { size?: number }) {
+export function Misty({ size = 140, mood = 'happy' }: { size?: number; mood?: Mood }) {
   const uid = useId().replace(/:/g, '');
   return (
-    <svg width={size} height={size} viewBox="0 0 160 160" role="img" aria-label="Misty the cloud">
+    <svg className={`buddy buddy--${mood}`} width={size} height={size} viewBox="0 0 160 160" role="img" aria-label="Misty the cloud">
       <defs>
         <radialGradient id={`m${uid}`} cx="45%" cy="40%" r="65%">
           <stop offset="0%" stopColor="#FFFBF4" />
@@ -169,4 +169,11 @@ export function Misty({ size = 140 }: { size?: number }) {
       <ellipse cx="106" cy="96" rx="8" ry="4.5" fill="#F2A1A8" opacity="0.55" />
     </svg>
   );
+}
+
+/** The friend for a world: Pip (garden), Bloop (river) or Misty (sky). */
+export function Companion({ who, mood = 'happy', size = 150 }: { who: 'pip' | 'bloop' | 'misty'; mood?: Mood; size?: number }) {
+  if (who === 'bloop') return <Bloop size={size} mood={mood} />;
+  if (who === 'misty') return <Misty size={size} mood={mood} />;
+  return <Pip size={size} mood={mood} />;
 }

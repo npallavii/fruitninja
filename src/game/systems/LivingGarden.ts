@@ -37,19 +37,24 @@ export class LivingGarden {
     private scene: Phaser.Scene,
     private drifters: Drifters,
     private reducedMotion: boolean,
-    count = 9,
+    /** where flowers grow; defaults to a row along the bottom of the screen */
+    places?: { x: number; y: number; scale?: number }[],
   ) {
-    const left = 150;
-    const right = GAME_W - 150;
-    for (let i = 0; i < count; i++) {
-      const x = left + ((right - left) * i) / (count - 1) + Phaser.Math.Between(-30, 30);
-      const y = GAME_H + 6 - Phaser.Math.Between(0, 26);
-      const scale = Phaser.Math.FloatBetween(0.72, 0.95);
+    const count = 9;
+    const spots: { x: number; y: number; scale?: number }[] =
+      places ??
+      Array.from({ length: count }, (_, i) => ({
+        x: 150 + ((GAME_W - 300) * i) / (count - 1) + Phaser.Math.Between(-30, 30),
+        y: GAME_H + 6 - Phaser.Math.Between(0, 26),
+      }));
+    spots.forEach((p, i) => {
+      const { x, y } = p;
+      const scale = (p.scale ?? 1) * Phaser.Math.FloatBetween(0.72, 0.95);
       const color = i % FLOWER_COLORS.length;
       const stem = scene.add.image(x, y, 'stem').setOrigin(0.5, 1).setScale(scale).setDepth(5);
       const head = scene.add.image(x, y - 150 * scale, `bud-${color}`).setScale(scale * 0.85).setDepth(6);
       this.spots.push({ x, y, scale, color, stem, head, bloomed: false, lean: 0, phase: Math.random() * 6 });
-    }
+    });
   }
 
   get allBloomed(): boolean {

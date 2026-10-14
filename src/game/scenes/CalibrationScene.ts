@@ -125,7 +125,7 @@ export class CalibrationScene extends Phaser.Scene {
       this.seen = hub.bodyVisible;
       bus.emit('tracking', { visible: hub.bodyVisible });
     }
-    const check = checkPlacement(hub.landmarks);
+    const check = checkPlacement(hub.landmarks, this.services.level);
     const before = this.progress;
     this.progress = Phaser.Math.Clamp(this.progress + (check.ok ? dt / HOLD_SECONDS : -dt * 0.6), 0, 1);
     this.drawFigure(this.progress);
@@ -174,7 +174,7 @@ export class CalibrationScene extends Phaser.Scene {
     }
     this.time.delayedCall(2400, () => {
       this.services.bus.emit('calibrated');
-      this.scene.start('giggle');
+      this.scene.start(this.services.level);
     });
   }
 }

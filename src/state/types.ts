@@ -8,6 +8,8 @@ export interface LevelInfo {
   movement: string;
   blurb: string;
   available: boolean;
+  /** the friend who talks during this world */
+  companion: 'pip' | 'bloop' | 'misty';
 }
 
 export const LEVELS: LevelInfo[] = [
@@ -17,20 +19,23 @@ export const LEVELS: LevelInfo[] = [
     movement: 'Arm movements',
     blurb: 'Swish your arms to slice floating fruit and wake up the sleepy flowers.',
     available: true,
+    companion: 'pip',
   },
   {
     id: 'waterway',
     name: 'The Wiggly Waterway',
     movement: 'Legs & balance',
-    blurb: 'Step and stomp beside the river to splash the rolling melons.',
-    available: false,
+    blurb: 'Step and stomp beside the river to splash rolling melons, and hop onto glowing lily pads.',
+    available: true,
+    companion: 'bloop',
   },
   {
     id: 'sky',
     name: 'The Cloudberry Sky',
     movement: 'Reaching & jumping',
-    blurb: 'Reach up high to pop the floating lantern fruits.',
-    available: false,
+    blurb: 'Reach up high to pop floating lanterns, build a rainbow bridge, and jump for golden stars.',
+    available: true,
+    companion: 'misty',
   },
 ];
 

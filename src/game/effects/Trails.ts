@@ -36,6 +36,8 @@ export class Trails {
     private scene: Phaser.Scene,
     private hub: InputHub,
     private sliceSpeed: () => number,
+    /** which body points to draw — hands by default, feet in the Waterway */
+    private source: (hub: InputHub) => Hand[] = (hub) => hub.hands,
   ) {
     this.g = scene.add.graphics().setDepth(20);
     this.cursors = [0, 1].map((i) =>
@@ -48,7 +50,7 @@ export class Trails {
     const g = this.g;
     g.clear();
     const fast = this.sliceSpeed();
-    this.hub.hands.forEach((hand, i) => {
+    this.source(this.hub).forEach((hand, i) => {
       this.drawTrail(hand, i, nowMs, fast);
       const c = this.cursors[i];
       const r = this.rings[i];

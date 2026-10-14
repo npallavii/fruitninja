@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
+import { voice } from '../audio/voice';
 import { getProgress, resetProgress } from '../state/progress';
 import { settings, type Sensitivity, type Settings } from '../state/settings';
 import { CloseIcon, SoundIcon } from './Icons';
@@ -91,6 +92,27 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
           <Slider label="Music" value={s.musicVolume} onChange={(v) => set({ musicVolume: v })} />
           <Slider label="Sound effects" value={s.sfxVolume} onChange={(v) => set({ sfxVolume: v })} />
           <Toggle label="Mute everything" value={s.muted} onChange={(v) => set({ muted: v })} />
+        </section>
+
+        <section>
+          <h3>Character voices</h3>
+          <Toggle label="Pip, Bloop and Misty talk" hint="Each friend reads their words aloud in their own voice" value={s.voices} onChange={(v) => set({ voices: v })} />
+          {s.voices && (
+            <>
+              <Slider label="Voice volume" value={s.voiceVolume} onChange={(v) => set({ voiceVolume: v })} />
+              <div className="row row--start">
+                <Button size="sm" tone="apricot" onClick={() => voice.say('Hi! I’m Pip!', 'pip', true)}>
+                  Hear Pip
+                </Button>
+                <Button size="sm" tone="slate" onClick={() => voice.say('Ribbit! I’m Bloop!', 'bloop', true)}>
+                  Hear Bloop
+                </Button>
+                <Button size="sm" tone="lavender" onClick={() => voice.say('Hello, I’m Misty.', 'misty', true)}>
+                  Hear Misty
+                </Button>
+              </div>
+            </>
+          )}
         </section>
 
         <section>

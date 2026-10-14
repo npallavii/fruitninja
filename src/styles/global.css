@@ -359,6 +359,40 @@ p {
   }
 }
 
+/* Bloop & Misty: same gentle life as Pip */
+.buddy {
+  overflow: visible;
+  animation: pip-bob 3.4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.buddy--cheer {
+  animation: pip-hop 1.5s ease-in-out infinite;
+}
+
+/* characters you can tap to hear them talk */
+.talk-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 24px;
+  transition: transform 0.15s ease;
+}
+.talk-btn:hover {
+  transform: scale(1.03);
+}
+.talk-btn:active {
+  transform: scale(0.97);
+}
+.talk-btn:focus-visible {
+  outline: 4px solid rgba(129, 150, 181, 0.55);
+  outline-offset: 4px;
+}
+.row--start {
+  justify-content: flex-start;
+}
+
 .bubble {
   position: relative;
   max-width: 340px;
@@ -892,6 +926,10 @@ p {
   pointer-events: none;
 }
 .game-pip .pip {
+  width: 9.5cqw;
+  height: auto;
+}
+.game-pip .buddy {
   width: 9.5cqw;
   height: auto;
 }

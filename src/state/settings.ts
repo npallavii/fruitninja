@@ -6,6 +6,9 @@ export interface Settings {
   musicVolume: number; // 0..1
   sfxVolume: number; // 0..1
   muted: boolean;
+  /** Characters speak their lines aloud. */
+  voices: boolean;
+  voiceVolume: number; // 0..1
   /** How visible the child's camera image is: 0 = "Garden only", 1 = fully visible. */
   cameraOpacity: number;
   sensitivity: Sensitivity;
@@ -22,6 +25,8 @@ export const DEFAULT_SETTINGS: Settings = {
   musicVolume: 0.5,
   sfxVolume: 0.7,
   muted: false,
+  voices: true,
+  voiceVolume: 0.9,
   cameraOpacity: 0.75,
   sensitivity: 'gentle',
   roundSeconds: 60,

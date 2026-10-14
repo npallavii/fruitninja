@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { fruitDataUrl, type FruitKind } from '../art/fruits';
+import { audio } from '../audio/audio';
+import { voice } from '../audio/voice';
 import { Pip } from './Characters';
 import { GearIcon, PlayIcon } from './Icons';
 import { Backdrop, Button, SpeechBubble } from './ui';
@@ -15,7 +18,14 @@ const FLOATERS: { kind: FruitKind; x: string; y: string; s: number; d: number }[
   { kind: 'orange', x: '4%', y: '40%', s: 78, d: 2.6 },
 ];
 
+const GREETING = 'Hi! I’m Pip. Let’s wake up the garden together!';
+
 export function TitleScreen({ onPlay, onSettings }: { onPlay: () => void; onSettings: () => void }) {
+  // browsers only allow speech after the first tap, so this works when coming back to the title
+  useEffect(() => {
+    const id = window.setTimeout(() => voice.say(GREETING, 'pip'), 700);
+    return () => window.clearTimeout(id);
+  }, []);
   return (
     <Backdrop rainbow>
       <main className="title">
@@ -54,8 +64,18 @@ export function TitleScreen({ onPlay, onSettings }: { onPlay: () => void; onSett
         </div>
 
         <div className="title__pip">
-          <SpeechBubble side="right">Hi! I’m Pip. Let’s wake up the garden together!</SpeechBubble>
-          <Pip mood="happy" size={210} />
+          <SpeechBubble side="right">{GREETING}</SpeechBubble>
+          <button
+            type="button"
+            className="talk-btn"
+            aria-label="Say hello to Pip"
+            onClick={() => {
+              audio.unlock();
+              voice.say(GREETING, 'pip', true);
+            }}
+          >
+            <Pip mood="happy" size={210} />
+          </button>
         </div>
 
         <p className="title__chip">Active play · Low stimulation · For kids</p>

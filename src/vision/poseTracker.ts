@@ -106,4 +106,8 @@ export const LM = {
   rightHip: 24,
   leftAnkle: 27,
   rightAnkle: 28,
+  leftHeel: 29,
+  rightHeel: 30,
+  leftFootIndex: 31,
+  rightFootIndex: 32,
 } as const;
