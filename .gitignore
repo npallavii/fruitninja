@@ -1,0 +1,17 @@
+# dependencies & build output
+node_modules/
+dist/
+
+# body-tracking runtime + model — restored automatically by `npm install`
+public/mediapipe/
+public/models/
+
+# logs & OS/editor files
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# concept screenshots — contain third-party art, kept local only
+reference/

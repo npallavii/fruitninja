@@ -1,0 +1,28 @@
+{
+  "name": "fruitopia",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Fruitopia: The Magical Moving Garden — a gentle, motion-controlled fruit game for children.",
+  "type": "module",
+  "scripts": {
+    "setup:vision": "node scripts/setup-vision.mjs",
+    "postinstall": "node scripts/setup-vision.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.35",
+    "phaser": "^3.90.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0"
+  }
+}
