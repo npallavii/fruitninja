@@ -203,7 +203,7 @@ export abstract class LevelScene extends Phaser.Scene {
     const canSpawn = this.running && tracked && !this.frost.active;
     if (canSpawn) {
       this.playMs += deltaMs;
-      if (hub.anyHandMoving() || hub.feet.some((f) => f.visible && f.speed > 140)) this.activeSeconds += dt;
+      if (hub.anyHandMoving() || hub.stillness > 80 || hub.feet.some((f) => f.visible && f.speed > 140)) this.activeSeconds += dt;
       if (this.crystalTimes.length && this.playMs >= this.crystalTimes[0] && !this.crystal) {
         this.crystalTimes.shift();
         this.launchCrystal();

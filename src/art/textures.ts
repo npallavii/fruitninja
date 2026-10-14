@@ -46,6 +46,7 @@ export function getTextures(): Map<string, HTMLCanvasElement> {
   t.set('lantern-star', lantern('#F4D99A', true));
   t.set('lilypad', lilypad());
   t.set('lilypad-glow', lilypadGlow());
+  t.set('basket', basket());
 
   cache = t;
   return t;
@@ -350,9 +351,22 @@ function lantern(color: string, star: boolean): HTMLCanvasElement {
   ctx.strokeStyle = '#9C7A5B';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(cx, 8);
+  ctx.moveTo(cx, 22);
   ctx.lineTo(cx, cy - 58);
   ctx.stroke();
+  if (!star) {
+    // a little cloud parachute: cloudberries drift down from the clouds
+    ctx.fillStyle = '#FFFDF8';
+    ctx.strokeStyle = 'rgba(185,166,211,0.8)';
+    ctx.lineWidth = 2;
+    const puff = new Path2D();
+    for (const [x, y, r] of [[cx - 22, 22, 13], [cx, 14, 16], [cx + 22, 22, 13], [cx - 10, 26, 12], [cx + 10, 26, 12]] as const) {
+      puff.moveTo(x + r, y);
+      puff.arc(x, y, r, 0, Math.PI * 2);
+    }
+    ctx.stroke(puff);
+    ctx.fill(puff);
+  }
   ctx.fillStyle = '#B9875E';
   ctx.beginPath();
   ctx.roundRect(cx - 18, cy - 62, 36, 10, 4);
@@ -447,6 +461,46 @@ function lilypadGlow(): HTMLCanvasElement {
   ctx.beginPath();
   ctx.ellipse(160, 95, 160, 95, 0, 0, Math.PI * 2);
   ctx.fill();
+  return c;
+}
+
+/** Bloop's woven basket that sits on the lily-pad boat. */
+function basket(): HTMLCanvasElement {
+  const c = makeCanvas(200, 120);
+  const ctx = ctx2d(c);
+  const body = new Path2D();
+  body.moveTo(18, 40);
+  body.quadraticCurveTo(100, 150, 182, 40);
+  body.closePath();
+  const g = ctx.createLinearGradient(0, 40, 0, 110);
+  g.addColorStop(0, '#DDB98C');
+  g.addColorStop(1, '#B98E62');
+  ctx.fillStyle = g;
+  ctx.fill(body);
+  ctx.save();
+  ctx.clip(body);
+  ctx.strokeStyle = 'rgba(140,100,65,0.55)';
+  ctx.lineWidth = 3;
+  for (let x = 10; x < 200; x += 16) {
+    ctx.beginPath();
+    ctx.moveTo(x, 40);
+    ctx.lineTo(x + 10, 110);
+    ctx.stroke();
+  }
+  for (let y = 52; y < 110; y += 13) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(200, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.fillStyle = '#E8CBA2';
+  ctx.beginPath();
+  ctx.roundRect(10, 32, 180, 14, 7);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(140,100,65,0.6)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
   return c;
 }
 

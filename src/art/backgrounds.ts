@@ -288,16 +288,6 @@ export function paintSky(w: number, h: number, seed = 11): HTMLCanvasElement {
     paintFlower(ctx, x - r * 0.4, y - 16 * k, 14 * k, PALETTE.blush, rng);
     paintFlower(ctx, x + r * 0.3, y - 14 * k, 12 * k, PALETTE.honey, rng);
   }
-  // lanterns
-  for (let i = 0; i < 9; i++) {
-    const x = rand(rng, w * 0.05, w * 0.95);
-    const y = h * rand(rng, 0.1, 0.55);
-    const s = rand(rng, 0.6, 1.1) * k;
-    ctx.save();
-    glow(ctx, x, y, 70 * s, PALETTE.honey, 0.35);
-    ctx.restore();
-    blob(ctx, x, y, 26 * s, 32 * s, i % 2 ? PALETTE.apricot : PALETTE.blush, rng, { layers: 8, alpha: 0.18 });
-  }
   // tiny stars
   for (let i = 0; i < 24; i++) {
     blob(ctx, rand(rng, 0, w), rand(rng, 0, h * 0.5), 3 * k, 3 * k, PALETTE.honey, rng, { layers: 3, alpha: 0.5, spread: 1 });

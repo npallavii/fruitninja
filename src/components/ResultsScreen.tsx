@@ -7,7 +7,7 @@ import { Companion } from './Characters';
 import { ClockIcon, FlowerIcon, HomeIcon, LeafIcon, ReplayIcon } from './Icons';
 import { Backdrop, Button, SpeechBubble } from './ui';
 
-const SUCCESS_LABEL = { giggle: 'Fruits sliced', waterway: 'Splashes', sky: 'Lanterns popped' } as const;
+const SUCCESS_LABEL = { giggle: 'Fruits sliced', waterway: 'Fruit caught', sky: 'Cloudberries caught' } as const;
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
   return (

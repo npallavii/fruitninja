@@ -12,8 +12,8 @@ const TONES: Record<LevelId, string> = { giggle: 'matcha', waterway: 'slate', sk
 const FRIEND_NAMES = { pip: 'Peachy', bloop: 'Bloop', misty: 'Misty' } as const;
 const HELLOS = {
   pip: 'Hee hee! I’m Peachy. Come slice fruit in the Giggle Garden!',
-  bloop: 'Ribbit! I’m Bloop. Let’s splash by the river!',
-  misty: 'Hello, I’m Misty. Let’s float up into the sky!',
+  bloop: 'Ribbit! I’m Bloop. Hop in my basket boat!',
+  misty: 'Hello, I’m Misty. Let’s catch berries from my clouds!',
 } as const;
 
 export function LevelSelect({ onPick, onBack }: { onPick: (id: LevelId) => void; onBack: () => void }) {

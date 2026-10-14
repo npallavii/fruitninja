@@ -12,7 +12,7 @@ const seen = (lm: Landmarks, i: number, min = 0.5) => {
 };
 
 /** "The Stepping Stone": is the child standing where the game can see them well? */
-export function checkPlacement(lm: Landmarks | null, level: LevelId = 'giggle'): CalibrationCheck {
+export function checkPlacement(lm: Landmarks | null, _level: LevelId = 'giggle'): CalibrationCheck {
   if (!lm) return { ok: false, message: "Pip can't see you yet — stand in front of the camera!" };
   const shoulders = seen(lm, LM.leftShoulder) && seen(lm, LM.rightShoulder);
   if (!shoulders || !seen(lm, LM.nose)) return { ok: false, message: 'Stand in front of the camera so Pip can see you.' };
@@ -28,10 +28,6 @@ export function checkPlacement(lm: Landmarks | null, level: LevelId = 'giggle'):
 
   if (!seen(lm, LM.leftWrist, 0.4) && !seen(lm, LM.rightWrist, 0.4))
     return { ok: false, message: 'Wave your hands so Pip can see them!' };
-
-  // the river world is played with feet, so they must be in view
-  if (level === 'waterway' && !seen(lm, LM.leftAnkle) && !seen(lm, LM.rightAnkle))
-    return { ok: false, message: 'Step back a little more so Pip can see your feet!' };
 
   return { ok: true, message: 'Perfect! Stay on the stepping stone…' };
 }

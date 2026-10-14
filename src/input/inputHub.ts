@@ -40,6 +40,9 @@ export class InputHub {
   hipX = GAME_W / 2;
   hipY = GAME_H * 0.6;
   hipsVisible = false;
+  /** Body centre between the shoulders (x), for steering. */
+  bodyX = GAME_W / 2;
+  shouldersVisible = false;
   /** Increments once per detected jump. */
   jumpCount = 0;
   private jumping = false;
@@ -123,6 +126,10 @@ export class InputHub {
       this.sample(hand, fx.filter(px, t), fy.filter(py, t), tMs);
     });
 
+    const ls = lm[LM.leftShoulder];
+    const rs = lm[LM.rightShoulder];
+    this.shouldersVisible = !!ls && !!rs && (ls.visibility ?? 1) > 0.5 && (rs.visibility ?? 1) > 0.5;
+    if (this.shouldersVisible) this.bodyX = this.toGame((ls.x + rs.x) / 2, 0).x;
     this.updateFeet(lm, t, tMs);
     this.updateHips(lm);
 

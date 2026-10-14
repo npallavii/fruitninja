@@ -12,6 +12,10 @@ const POINTS_HIGH = 5; // extra for reaching up high
 const POINTS_STAR = 30;
 const POINTS_BRIDGE = 50;
 const HIGH_LINE = 330;
+/** a jump catches every berry above this line that is near the child */
+const JUMP_LINE = 470;
+const JUMP_REACH = 280;
+const POINTS_JUMP = 15;
 const BRIDGE_STEPS = 14;
 // rainbow bridge from the left island to the right island (matches the painted background)
 const BRIDGE_A = { x: 300, y: 540 };
@@ -44,7 +48,7 @@ const ISLAND_FLOWERS = [
   { x: 815, y: 714, scale: 0.5 },
 ];
 
-/** Level 3 — The Cloudberry Sky: reach up to pop lanterns; jump for golden stars. */
+/** Level 3 — The Cloudberry Sky: cloudberries fall from the clouds; reach up or jump to catch them. */
 export class SkyScene extends LevelScene {
   private lanterns: Lantern[] = [];
   private bridge!: Phaser.GameObjects.Graphics;
@@ -60,10 +64,10 @@ export class SkyScene extends LevelScene {
       key: 'sky',
       companion: 'misty',
       intro: {
-        camera: 'Hello, I’m Misty! Reach up high and pop the floating lanterns!',
-        mouse: 'Hello, I’m Misty! Touch the floating lanterns to pop them!',
+        camera: 'Hello, I’m Misty! Cloudberries are falling from my clouds. Reach up, or jump, to catch them!',
+        mouse: 'Hello, I’m Misty! Cloudberries are falling from my clouds. Touch them to catch them!',
       },
-      cheers: ['Pop! So gentle!', 'You reached so high!', 'The rainbow is growing!', 'Lovely stretching!'],
+      cheers: ['Pop! What a catch!', 'You reached so high!', 'The rainbow is growing!', 'Lovely jumping!'],
       successesPerBloom: 3,
       gardenPlaces: ISLAND_FLOWERS,
     });
@@ -94,11 +98,11 @@ export class SkyScene extends LevelScene {
         l.img.y = l.x0 + Math.sin(l.age * 1.6) * 18; // x0 holds the star's base height
         l.img.rotation = Math.sin(l.age * 2) * 0.15;
       } else {
-        l.img.y += l.vy * worldDt;
+        l.img.y += l.vy * worldDt; // drifting down under its cloud parachute
         l.img.x = l.x0 + Math.sin(l.age * 1.1 + l.phase) * 35;
         l.img.rotation = Math.sin(l.age * 1.1 + l.phase) * 0.08;
       }
-      const gone = l.star ? l.img.x < -160 || l.img.x > GAME_W + 160 : l.img.y < -130;
+      const gone = l.star ? l.img.x < -160 || l.img.x > GAME_W + 160 : l.img.y > GAME_H + 120;
       if (gone) {
         l.img.destroy();
         this.lanterns.splice(i, 1);
@@ -116,12 +120,17 @@ export class SkyScene extends LevelScene {
         if (!l.popped && Phaser.Math.Distance.Between(h.x, h.y, l.img.x, l.img.y) < l.r + 26) this.pop(l, false);
       }
     }
-    // jump: catches the golden star, or just gets a happy little reward
+    // jump: catches the golden star and every high cloudberry near the child
     if (this.hub.jumpCount > this.lastJump) {
       this.lastJump = this.hub.jumpCount;
       const star = this.lanterns.find((l) => l.star && !l.popped);
+      const high = this.lanterns.filter(
+        (l) => !l.star && !l.popped && l.img.y > 40 && l.img.y < JUMP_LINE && Math.abs(l.img.x - this.hub.hipX) < JUMP_REACH,
+      );
       if (star) this.pop(star, true);
-      else if (now - this.lastJumpReward > 2500) {
+      high.forEach((l) => this.pop(l, true));
+      if (high.length >= 2) this.say('Wow! A jump catch!', 'cheer', true);
+      if (!star && !high.length && now - this.lastJumpReward > 2500) {
         this.lastJumpReward = now;
         this.bonus(this.hub.hipX, this.hub.hipY - 200, 5, 'Boing! +5');
         audio.pop(0.9);
@@ -144,13 +153,13 @@ export class SkyScene extends LevelScene {
         if (!this.running) return;
         const color = Phaser.Math.Between(0, LANTERN_COLORS.length - 1);
         const x0 = Phaser.Math.Between(260, GAME_W - 260);
-        const img = this.add.image(x0, GAME_H + 90, `lantern-${color}`).setDepth(10).setScale(0.85);
+        const img = this.add.image(x0, -110, `lantern-${color}`).setDepth(10).setScale(0.85);
         this.lanterns.push({
           img,
           color,
           x0,
           vx: 0,
-          vy: -Phaser.Math.Between(75, 115) * (1 + p * 0.2),
+          vy: Phaser.Math.Between(62, 92) * (1 + p * 0.25),
           age: 0,
           phase: Math.random() * 6,
           r: 50,
@@ -212,6 +221,8 @@ export class SkyScene extends LevelScene {
       this.success(x, y + 40, POINTS_STAR, byJump ? `Big jump! +${POINTS_STAR}` : `Star catch! +${POINTS_STAR}`);
       this.say(byJump ? 'What a big jump! You caught the star!' : 'You caught the golden star!', 'cheer', true);
       this.garden.spawnButterfly(x, y);
+    } else if (byJump) {
+      this.success(x, y + 30, POINTS_JUMP, `Jump catch! +${POINTS_JUMP}`);
     } else if (y < HIGH_LINE) {
       this.success(x, y + 30, POINTS_LANTERN + POINTS_HIGH, `Reach high! +${POINTS_LANTERN + POINTS_HIGH}`);
     } else {

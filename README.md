@@ -30,8 +30,8 @@ It builds the game and pushes it to the `gh-pages` branch, which GitHub Pages se
 | World | Friend | Movement | How it plays |
 |---|---|---|---|
 | **The Giggle Garden** | Pip the red panda | Arms | Swish through floating fruit. 3+ in one sweep = **Calligraphy Flow** combo. |
-| **The Wiggly Waterway** | Bloop the frog | Legs & balance | Step/stomp beside rolling melons to splash them. Stand on the **glowing lily pad** to make a lotus bloom. If your feet are hidden, hands work too. |
-| **The Cloudberry Sky** | Misty the cloud | Reaching & jumping | Touch rising lanterns to pop them (higher = bonus). Each pop grows a **rainbow bridge**. **Jump** (or reach) to catch the golden star. |
+| **The Wiggly Waterway** | Bloop the frog | Swaying & side steps | Sway left and right to steer Bloop’s basket boat and catch fruit floating down the river. Catch the golden lotus for a bonus. |
+| **The Cloudberry Sky** | Misty the cloud | Reaching & jumping | Cloudberries drift down from the clouds. Reach up to catch them (higher = bonus), or **jump** to catch every berry above you. Each catch grows a **rainbow bridge**; jump for the golden star. |
 
 In every world: successes wake up sleepy flowers, and the **Morning Frost** crystal asks for a 3-second statue pose.
 
@@ -83,5 +83,5 @@ so there's nothing to license and nothing that can fail to load.
 - [x] Phase 1–3: foundation, Giggle Garden, real body tracking + calibration
 - [x] Morning Frost, Calligraphy Flow combos, Living Tapestry results
 - [x] Character voices (Pip, Bloop, Misty)
-- [x] The Wiggly Waterway (legs & balance) — Bloop the frog
+- [x] The Wiggly Waterway (swaying & side steps) — Bloop the frog
 - [x] The Cloudberry Sky (reaching & jumping) — Misty the cloud
