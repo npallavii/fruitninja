@@ -1,10 +1,6 @@
-# dependencies & build output
+# dependencies & build output (recreated by `npm install` / `npm run build`)
 node_modules/
 dist/
-
-# body-tracking runtime + model — restored automatically by `npm install`
-public/mediapipe/
-public/models/
 
 # logs & OS/editor files
 *.log
